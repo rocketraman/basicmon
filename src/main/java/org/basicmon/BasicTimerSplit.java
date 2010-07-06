@@ -1,14 +1,14 @@
-package com.rocketraman.basicmon;
+package org.basicmon;
 
 /**
  * A basic timer keeping a count and cumulative time.
  */
-public class BasicTimerSplit {
+public final class BasicTimerSplit {
 
-    private BasicTimer timer;
-    private long startTime;
+    private final BasicTimer timer;
+    private final long startTime;
 
-    public BasicTimerSplit(BasicTimer timer, long startTime) {
+    public BasicTimerSplit(final BasicTimer timer, final long startTime) {
 
         this.timer = timer;
         this.startTime = startTime;
