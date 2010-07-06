@@ -82,14 +82,9 @@ javasimon rather than BasicMon if these additional statistics are required.
 
 == Resources ==
 
-Project is hosted on Google Code as "javasimon":
-  * Homepage: http://www.javasimon.org
-  * Project page: http://code.google.com/p/javasimon/
-  * Download: http://code.google.com/p/javasimon/downloads/list
-  * Javadoc API: http://javasimon.googlecode.com/svn/javadoc/api-2.1/index.html
-  * Source browser: http://code.google.com/p/javasimon/source/browse/
-  * Issue tracker: http://code.google.com/p/javasimon/issues/list
-  * Ohloh page: http://www.ohloh.net/p/javasimon
+Project is hosted on Github as "basicmon":
+  * Project page: http://github.com/rocketraman/basicmon
+  * Issue tracker: http://github.com/rocketraman/basicmon/issues
 
-Project uses following libraries:
+Project uses the following libraries:
   * Commons math: http://commons.apache.org/math/ (Extra statistics, optional at runtime)
