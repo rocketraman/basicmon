@@ -77,13 +77,21 @@ public final class BasicTimerAtomicImpl extends BasicMonAtomicBase implements Ba
 
     }
 
-    public void stop(BasicTimerSplit split) {
+    public long stop(BasicTimerSplit split) {
 
         // stop timing as soon as possible
         final long splitTime = System.nanoTime() - split.getStartTime();
         active.decrementAndGet();
 
         super.setVal(splitTime);
+
+        return splitTime;
+
+    }
+
+    public void addTime(long time) {
+
+        super.setVal(time);
 
     }
 

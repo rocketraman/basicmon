@@ -75,17 +75,35 @@ public final class BasicMonManager {
 
     public static BasicCounter getCounter(String id) {
 
-        return manager.doGetSyncCounter(id, false);
+        return manager.doGetAtomicCounter(id, false);
 
     }
 
     public static BasicCounter getCounterWithStats(String id) {
 
-        return manager.doGetSyncCounter(id, true);
+        return manager.doGetAtomicCounter(id, true);
 
     }
 
     public static BasicCounter getCounter(String id, boolean withStats) {
+
+        return manager.doGetAtomicCounter(id, withStats);
+
+    }
+
+    public static BasicCounter getSyncCounter(String id) {
+
+        return manager.doGetSyncCounter(id, false);
+
+    }
+
+    public static BasicCounter getSyncCounterWithStats(String id) {
+
+        return manager.doGetSyncCounter(id, true);
+
+    }
+
+    public static BasicCounter getSyncCounter(String id, boolean withStats) {
 
         return manager.doGetSyncCounter(id, withStats);
 

@@ -91,10 +91,10 @@ public abstract class BasicMonBase {
 
         if(! withStats) return -1;
 
-        long counter = getVal();
+        long total = getTotal();
         double variance = getVariance();
 
-        return BasicMonUtil.calcStdDev(variance, counter);
+        return BasicMonUtil.calcStdDev(variance, total);
 
     }
 

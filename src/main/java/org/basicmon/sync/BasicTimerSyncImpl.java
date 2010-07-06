@@ -74,10 +74,19 @@ public final class BasicTimerSyncImpl extends BasicMonSyncBase implements BasicT
 
     }
 
-    public void stop(BasicTimerSplit split) {
+    public long stop(BasicTimerSplit split) {
 
         // stop timing as soon as possible
-        updateSplit(System.nanoTime() - split.getStartTime());
+        final long splitTime = System.nanoTime() - split.getStartTime();
+        updateSplit(splitTime);
+
+        return splitTime;
+
+    }
+
+    public void addTime(long time) {
+
+        updateSplit(time);
 
     }
 

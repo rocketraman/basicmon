@@ -7,7 +7,9 @@ public interface BasicTimer extends BasicMon {
 
     public BasicTimerSplit start();
 
-    public void stop(BasicTimerSplit split);
+    public long stop(BasicTimerSplit split);
+
+    public void addTime(long time);
 
     public int getActive();
 

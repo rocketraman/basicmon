@@ -15,9 +15,9 @@ public final class BasicTimerSplit {
 
     }
 
-    public void stop() {
+    public long stop() {
 
-        timer.stop(this);
+        return timer.stop(this);
 
     }
 
