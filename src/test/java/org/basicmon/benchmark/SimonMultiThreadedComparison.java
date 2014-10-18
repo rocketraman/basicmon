@@ -1,121 +1,140 @@
 package org.basicmon.benchmark;
 
+import com.google.caliper.Param;
+import com.google.caliper.api.AfterRep;
+import com.google.caliper.api.Macrobenchmark;
 import org.basicmon.BasicMonManager;
 import org.basicmon.BasicTimer;
 import org.javasimon.SimonManager;
+import org.javasimon.Split;
 import org.javasimon.Stopwatch;
 import org.javasimon.utils.SimonUtils;
 
 import java.util.concurrent.CountDownLatch;
 
 /**
- * Compares multi-threaded performance with javasimon. In this test the Atomic timers generally seem to perform
- * better than the synchronization timers, at least on Linux 2.6.23.
+ * Compares multi-threaded performance with javasimon. We compare both atomic and synchronization-based timers.
+ *
+ * Run: mvn exec:java -Dexec.classpathScope="test" -Dexec.mainClass=com.google.caliper.runner.CaliperMain -Dexec.args="--print-config --instrument runtime org.basicmon.benchmark.SimonMultiThreadedComparison"
  */
-public class SimonMultiThreadedComparison {
+@SuppressWarnings("UnusedDeclaration")
+public final class SimonMultiThreadedComparison {
 
-    // low contention
-//    private static final int THREADS = Runtime.getRuntime().availableProcessors();
-//    private static final int LOOP = 1000000;
-
-    // high contention
-    private static final int THREADS = 300;
-    private static final int LOOP = 10000;
+    @Param({"8", "100"}) int threads;
+    @Param({"100", "1000"}) int loops;
 
     private static final String NAME = SimonUtils.generateName();
 
     private static CountDownLatch latch;
 
-    private SimonMultiThreadedComparison() {
+    @AfterRep
+    public void tearDown() throws Exception {
+        BasicMonManager.reset();
+        SimonManager.clear();
     }
 
-    /**
-     * Entry point of the demo application.
-     *
-     * @param args command line arguments
-     * @throws InterruptedException should not happen
-     */
-    public static void main(String[] args) throws InterruptedException {
-        System.out.println("Threads: " + THREADS);
-        int round = 1;
-        while (true) {
-            System.out.println("\nRound: " + round++);
-            doBasicAtomic();
-            BasicMonManager.reset();
+    @Macrobenchmark
+    public void basicAtomic() {
+        int threads = this.threads;
+        int loops = this.loops;
+        doBasicAtomic(threads, loops);
+    }
 
-            doBasicSync();
+    @Macrobenchmark
+    public void basicSynchronized() {
+        int threads = this.threads;
+        int loops = this.loops;
+        doBasicSync(threads, loops);
+    }
 
-            doSimon();
+    @Macrobenchmark
+    public void simon() {
+        int threads = this.threads;
+        int loops = this.loops;
+        doSimon(threads, loops);
+    }
 
-            BasicMonManager.reset();
-            SimonManager.clear();
+    private void doSimon(int threads, int loops) {
+        latch = new CountDownLatch(threads);
+        for (int i = 0; i < threads; i++) {
+            SimonMultithreadedStress test = new SimonMultithreadedStress(loops);
+            test.start();
+        }
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private static void doSimon() throws InterruptedException {
-        long ns = System.nanoTime();
-        latch = new CountDownLatch(THREADS);
-        for (int i = 0; i < THREADS; i++) {
-            new SimonMultithreadedStress().start();
+    private void doBasicAtomic(int threads, int loops) {
+        latch = new CountDownLatch(threads);
+        for (int i = 0; i < threads; i++) {
+            new BasicAtomicTimerMultithreadedStress(loops).start();
         }
-        latch.await();
-        ns = System.nanoTime() - ns;
-        Stopwatch stopwatch = SimonManager.getStopwatch(NAME);
-        System.out.println("Result: " + stopwatch +
-            ", mean " + SimonUtils.presentNanoTime(stopwatch.getTotal() / stopwatch.getCounter()) +
-            ", active max " + stopwatch.getMaxActive());
-        System.out.println("Test Simon Total: " + SimonUtils.presentNanoTime(ns));
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    private static void doBasicAtomic() throws InterruptedException {
-        long ns = System.nanoTime();
-        latch = new CountDownLatch(THREADS);
-        for (int i = 0; i < THREADS; i++) {
-            new BasicAtomicTimerMultithreadedStress().start();
+    private void doBasicSync(int threads, int loops) {
+        latch = new CountDownLatch(threads);
+        for (int i = 0; i < threads; i++) {
+            new BasicSyncTimerMultithreadedStress(loops).start();
         }
-        latch.await();
-        ns = System.nanoTime() - ns;
-        System.out.println("Result: " + BasicMonManager.getTimer(NAME));
-        System.out.println("Test BasicTimer Atomic Total: " + SimonUtils.presentNanoTime(ns));
-    }
-
-    private static void doBasicSync() throws InterruptedException {
-        long ns = System.nanoTime();
-        latch = new CountDownLatch(THREADS);
-        for (int i = 0; i < THREADS; i++) {
-            new BasicSyncTimerMultithreadedStress().start();
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
-        latch.await();
-        ns = System.nanoTime() - ns;
-        System.out.println("Result: " + BasicMonManager.getTimer(NAME));
-        System.out.println("Test BasicTimer Sync Total: " + SimonUtils.presentNanoTime(ns));
     }
 
     private static class SimonMultithreadedStress extends Thread {
+        int loops;
+        long result;
+        public SimonMultithreadedStress(int loops) {
+            this.loops = loops;
+        }
+
         public void run() {
             Stopwatch stopwatch = SimonManager.getStopwatch(NAME);
-            for (int i = 0; i < LOOP; i++) {
-                stopwatch.start().stop();
+            for (int i = 0; i < loops; i++) {
+                Split split = stopwatch.start().stop();
+                result |= split.runningFor();
             }
             latch.countDown();
         }
     }
 
     private static class BasicAtomicTimerMultithreadedStress extends Thread {
+        int loops;
+        long result;
+        public BasicAtomicTimerMultithreadedStress(int loops) {
+            this.loops = loops;
+        }
+
         public void run() {
             BasicTimer timer = BasicMonManager.getAtomicTimer(NAME);
-            for (int i = 0; i < LOOP; i++) {
-                timer.start().stop();
+            for (int i = 0; i < loops; i++) {
+                result |= timer.start().stop();
             }
             latch.countDown();
         }
     }
 
     private static class BasicSyncTimerMultithreadedStress extends Thread {
+        int loops;
+        long result;
+        public BasicSyncTimerMultithreadedStress(int loops) {
+            this.loops = loops;
+        }
+
         public void run() {
-            BasicTimer timer = BasicMonManager.getTimer(NAME);
-            for (int i = 0; i < LOOP; i++) {
-                timer.start().stop();
+            BasicTimer timer = BasicMonManager.getSyncTimer(NAME);
+            for (int i = 0; i < loops; i++) {
+                result |= timer.start().stop();
             }
             latch.countDown();
         }

@@ -1,175 +1,143 @@
 package org.basicmon.benchmark;
 
+import com.google.caliper.BeforeExperiment;
+import com.google.caliper.Benchmark;
+import com.google.caliper.Param;
+import com.google.caliper.api.SkipThisScenarioException;
 import org.basicmon.BasicMonManager;
 import org.basicmon.BasicTimer;
 import org.basicmon.BasicTimerSplit;
 import org.javasimon.SimonManager;
 import org.javasimon.Split;
 import org.javasimon.Stopwatch;
-import org.javasimon.utils.SimonUtils;
+
+import static org.basicmon.benchmark.LoopComparison.*;
 
 /**
- * Docs
+ * Run: mvn exec:java -Dexec.classpathScope="test" -Dexec.mainClass=com.google.caliper.runner.CaliperMain -Dexec.args="--print-config --instrument runtime org.basicmon.benchmark.SimonComparison"
  */
+@SuppressWarnings("UnusedDeclaration")
 public class SimonComparison {
 
-    private static final int OUTER_LOOP = 1000000;
-    private static final int INNER_LOOP = 1000;
+    @Param({"none", "simon", "basic"}) String type;
+    @Param({"getonce", "geteach"}) String getWhen;
 
-    public static long loopvar = 0;
-
-    private SimonComparison() {
+    @BeforeExperiment
+    public void setup() throws Exception {
+        BasicMonManager.reset();
+        SimonManager.clear();
+        LoopComparison.setup();
     }
 
-    /**
-     * Entry point of the demo application.
-     *
-     * @param args command line arguments
-     */
-    public static void main(String[] args) {
-        int round = 1;
-        while (true) {
-            System.out.println("\nRound: " + round++);
-            noTimerTest();
-            simonTest();
-            basicTest();
-            basicTestWithStats();
-            basicTestSync();
-            basicTestSyncWithStats();
-            simonTest2();
-            basicTest2();
-            basicTestWithStats2();
+    @Benchmark
+    public long timer(int reps) {
+        String type = this.type;
+        String getWhen = this.getWhen;
+        if("none".equals(type) && "getonce".equals(getWhen)) {
+            return noTimer(reps);
+        } else if("none".equals(type)) {
+            throw new SkipThisScenarioException();
+        } else if("simon".equals(type) && "getonce".equals(getWhen)) {
+            return simonOneStopwatch(reps);
+        } else if("simon".equals(type) && "geteach".equals(getWhen)) {
+            return simonGetStopwatch(reps);
+        } else if("basic".equals(type) && "getonce".equals(getWhen)) {
+            return basicOneStopwatch(reps);
+        } else if("basic".equals(type) && "geteach".equals(getWhen)) {
+            return basicGetStopwatch(reps);
+        } else {
+            throw new IllegalArgumentException("Invalid parameter combination.");
         }
     }
 
-    private static void noTimerTest() {
-        long ns = System.nanoTime();
-        for (int i = 0; i < OUTER_LOOP; i++) {
-            stay();
+    public long noTimer(int reps) {
+        for(int i = 0; i < reps; i++) {
             stay();
         }
-        ns = System.nanoTime() - ns;
-
-        System.out.println("No timer total: " + SimonUtils.presentNanoTime(ns) +
-                " real estimate: " + SimonUtils.presentNanoTime(ns / 2));
+        return loopVar;
     }
 
-    private static void simonTest() {
-        Stopwatch stopwatch = SimonManager.getStopwatch("bu");
-        stopwatch.reset();
+    public long simonOneStopwatch(int reps) {
+        final Stopwatch stopwatch = SimonManager.getStopwatch("bu");
+        Call<Void> initStopwatch = new Call<Void>() {
+            public Void call() {
+                stopwatch.reset();
+                return null;
+            }
+        };
+        Call<Stopwatch> getStopwatch = new Call<Stopwatch>() {
+            public Stopwatch call() {
+                return stopwatch;
+            }
+        };
+        testSimon(initStopwatch, getStopwatch, reps);
+        return loopVar;
+    }
 
-        long ns = System.nanoTime();
-        for (int i = 0; i < OUTER_LOOP; i++) {
-            stay();
-            Split split = stopwatch.start();
+    public long simonGetStopwatch(int reps) {
+        Call<Void> initStopwatch = new Call<Void>() {
+            public Void call() {
+                SimonManager.getStopwatch("bu").reset();
+                return null;
+            }
+        };
+        Call<Stopwatch> getStopwatch = new Call<Stopwatch>() {
+            public Stopwatch call() {
+                return SimonManager.getStopwatch("bu");
+            }
+        };
+        testSimon(initStopwatch, getStopwatch, reps);
+        return loopVar;
+    }
+
+    public long basicOneStopwatch(int reps) {
+        final BasicTimer timer = BasicMonManager.getTimer("bu");
+        Call<Void> initTimer = new Call<Void>() {
+            public Void call() {
+                timer.reset();
+                return null;
+            }
+        };
+        Call<BasicTimer> getTimer = new Call<BasicTimer>() {
+            public BasicTimer call() {
+                return timer;
+            }
+        };
+        testBasic(initTimer, getTimer, reps);
+        return loopVar;
+    }
+
+    public long basicGetStopwatch(int reps) {
+        Call<Void> initTimer = new Call<Void>() {
+            public Void call() {
+                BasicMonManager.getTimer("bu").reset();
+                return null;
+            }
+        };
+        Call<BasicTimer> getTimer = new Call<BasicTimer>() {
+            public BasicTimer call() {
+                return BasicMonManager.getTimer("bu");
+            }
+        };
+        testBasic(initTimer, getTimer, reps);
+        return loopVar;
+    }
+
+    private void testSimon(Call<Void> initStopwatch, Call<Stopwatch> getStopwatch, int reps) {
+        initStopwatch.call();
+        for (int i = 0; i < reps; i++) {
+            Split split = getStopwatch.call().start();
             stay();
             split.stop();
         }
-        ns = System.nanoTime() - ns;
-
-        printSimonResults(ns, stopwatch, "Simon start/stop");
     }
 
-    private static void simonTest2() {
-        SimonManager.getStopwatch("org.javasimon.examples.stopwatch1").reset();
-
-        long ns = System.nanoTime();
-        for (int i = 0; i < OUTER_LOOP; i++) {
-            stay();
-            Split split = SimonManager.getStopwatch("org.javasimon.examples.stopwatch1").start();
+    private void testBasic(Call<Void> initTimer, Call<BasicTimer> getTimer, int reps) {
+        initTimer.call();
+        for (int i = 0; i < reps; i++) {
+            BasicTimerSplit split = getTimer.call().start();
             stay();
             split.stop();
-        }
-        ns = System.nanoTime() - ns;
-
-        Stopwatch stopwatch = SimonManager.getStopwatch("org.javasimon.examples.stopwatch1");
-        printSimonResults(ns, stopwatch, "Simon get+start/stop");
-    }
-
-    private static void printSimonResults(long ns, Stopwatch stopwatch, String title) {
-        System.out.println(title + " count: " + stopwatch.getCounter() + ", total: " + SimonUtils.presentNanoTime(stopwatch.getTotal()) +
-            ", avg: " + stopwatch.getTotal() / stopwatch.getCounter() +
-            ", max: " + SimonUtils.presentNanoTime(stopwatch.getMax()) + ", min: " + SimonUtils.presentNanoTime(stopwatch.getMin()) +
-            ", real: " + SimonUtils.presentNanoTime(ns));
-    }
-
-    private static void basicTest() {
-        BasicMonManager.reset();
-        basicTest(BasicMonManager.getAtomicTimer("bu"), "BasicTimer Atomic start/stop");
-    }
-
-    private static void basicTestSync() {
-        BasicMonManager.reset();
-        basicTest(BasicMonManager.getSyncTimer("bu"), "BasicTimer Sync start/stop");
-    }
-
-    private static void basicTestWithStats() {
-        BasicMonManager.reset();
-        basicTest(BasicMonManager.getAtomicTimerWithStats("bu"), "BasicTimer Atomic Stats start/stop");
-    }
-
-    private static void basicTestSyncWithStats() {
-        BasicMonManager.reset();
-        basicTest(BasicMonManager.getSyncTimerWithStats("bu"), "BasicTimer Sync Stats start/stop");
-    }
-
-    private static void basicTest(BasicTimer stopwatch, String title) {
-        stopwatch.reset();
-
-        long ns = System.nanoTime();
-        for (int i = 0; i < OUTER_LOOP; i++) {
-            BasicTimerSplit split = stopwatch.start();
-            stay();
-            split.stop();
-            stay();
-        }
-        ns = System.nanoTime() - ns;
-
-        printBasicTimerResults(ns, stopwatch, title);
-    }
-
-    private static void basicTest2() {
-        BasicMonManager.reset();
-
-        long ns = System.nanoTime();
-        for (int i = 0; i < OUTER_LOOP; i++) {
-            stay();
-            BasicTimerSplit split = BasicMonManager.getSyncTimer("BasicTimer.timer").start();
-            stay();
-            split.stop();
-        }
-        ns = System.nanoTime() - ns;
-
-        BasicTimer stopwatch = BasicMonManager.getSyncTimer("BasicTimer.timer");
-        printBasicTimerResults(ns, stopwatch, "BasicTimer Sync get+start/stop");
-    }
-
-    private static void basicTestWithStats2() {
-        BasicMonManager.reset();
-
-        long ns = System.nanoTime();
-        for (int i = 0; i < OUTER_LOOP; i++) {
-            stay();
-            BasicTimerSplit split = BasicMonManager.getSyncTimerWithStats("BasicTimer.timer").start();
-            stay();
-            split.stop();
-        }
-        ns = System.nanoTime() - ns;
-
-        BasicTimer stopwatch = BasicMonManager.getSyncTimer("BasicTimer.timer");
-        printBasicTimerResults(ns, stopwatch, "BasicTimer Sync Stats get+start/stop");
-    }
-
-    private static void printBasicTimerResults(long ns, BasicTimer stopwatch, String title) {
-        System.out.println(title + " count: " + stopwatch.getUpdateCount() + ", total: " + SimonUtils.presentNanoTime(stopwatch.getTotal()) +
-            ", avg: " + stopwatch.getMean() +
-            ", max: " + SimonUtils.presentNanoTime(stopwatch.getMax()) + ", min: " + SimonUtils.presentNanoTime(stopwatch.getMin()) +
-            ", real: " + SimonUtils.presentNanoTime(ns));
-    }
-
-    private static void stay() {
-        for (int j = 0; j < INNER_LOOP; j++) {
-            loopvar++;
         }
     }
 
