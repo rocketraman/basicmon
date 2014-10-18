@@ -6,6 +6,7 @@ import org.basicmon.BasicTimerStats;
 import org.basicmon.util.BasicMonUtil;
 import org.basicmon.util.BasicTimerUtil;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -18,7 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * performs very well on most platforms in low thread contention scenarios. For high thread contention scenarios,
  * use the synchronized implementation {@link org.basicmon.sync.BasicTimerSyncImpl}.
  */
-public final class BasicTimerAtomicImpl extends BasicMonAtomicBase implements BasicTimer {
+public final class BasicTimerAtomicImpl<V> extends BasicMonAtomicBase implements BasicTimer<V> {
 
     private final AtomicInteger active = new AtomicInteger(0);
     private final AtomicLong activeTotal = new AtomicLong(0);
@@ -86,6 +87,22 @@ public final class BasicTimerAtomicImpl extends BasicMonAtomicBase implements Ba
         super.setVal(splitTime);
 
         return splitTime;
+
+    }
+
+    public V doInTimer(Callable<V> function) throws Exception {
+
+        BasicTimerSplit split = start();
+
+        try {
+
+            return function.call();
+
+        } finally {
+
+            split.stop();
+
+        }
 
     }
 

@@ -6,6 +6,8 @@ import org.basicmon.BasicTimerStats;
 import org.basicmon.util.BasicMonUtil;
 import org.basicmon.util.BasicTimerUtil;
 
+import java.util.concurrent.Callable;
+
 /**
  * A basic timer keeping a count and cumulative time. The val in {@link org.basicmon.atomic.BasicMonAtomicBase} will represent the
  * timer split times.
@@ -17,7 +19,7 @@ import org.basicmon.util.BasicTimerUtil;
  * is accessing the timed code -- it seems likely that java uses optimizations to eliminate unnecessary synchronization
  * in these cases.
  */
-public final class BasicTimerSyncImpl extends BasicMonSyncBase implements BasicTimer {
+public final class BasicTimerSyncImpl<V> extends BasicMonSyncBase implements BasicTimer<V> {
 
     private int active;
     private long activeTotal;
@@ -65,8 +67,6 @@ public final class BasicTimerSyncImpl extends BasicMonSyncBase implements BasicT
 
     public BasicTimerSplit start() {
 
-        final int currentActive;
-
         updateActive();
 
         // start timing as late as possible, get expensive nanoTime call out of synchronized block
@@ -81,6 +81,22 @@ public final class BasicTimerSyncImpl extends BasicMonSyncBase implements BasicT
         updateSplit(splitTime);
 
         return splitTime;
+
+    }
+
+    public V doInTimer(Callable<V> function) throws Exception {
+
+        BasicTimerSplit split = start();
+
+        try {
+
+            return function.call();
+
+        } finally {
+
+            split.stop();
+
+        }
 
     }
 
