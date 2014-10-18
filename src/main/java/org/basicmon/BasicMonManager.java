@@ -21,19 +21,19 @@ public final class BasicMonManager {
 
     public static BasicTimer getTimer(String id) {
 
-        return manager.doGetAtomicTimer(id, false);
+        return manager.doGetSyncTimer(id, false);
 
     }
 
     public static BasicTimer getTimerWithStats(String id) {
 
-        return manager.doGetAtomicTimer(id, true);
+        return manager.doGetSyncTimer(id, true);
 
     }
 
     public static BasicTimer getTimer(String id, boolean withStats) {
 
-        return manager.doGetAtomicTimer(id, withStats);
+        return manager.doGetSyncTimer(id, withStats);
 
     }
 
