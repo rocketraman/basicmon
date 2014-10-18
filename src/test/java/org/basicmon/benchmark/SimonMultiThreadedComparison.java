@@ -2,9 +2,7 @@ package org.basicmon.benchmark;
 
 import org.basicmon.BasicMonManager;
 import org.basicmon.BasicTimer;
-import org.basicmon.BasicTimerSplit;
 import org.javasimon.SimonManager;
-import org.javasimon.Split;
 import org.javasimon.Stopwatch;
 import org.javasimon.utils.SimonUtils;
 
@@ -24,7 +22,7 @@ public class SimonMultiThreadedComparison {
     private static final int THREADS = 300;
     private static final int LOOP = 10000;
 
-    private static final String NAME = SimonUtils.generateName(null, false);
+    private static final String NAME = SimonUtils.generateName();
 
     private static CountDownLatch latch;
 
