@@ -1,7 +1,5 @@
 # BasicMon - Really Simple Monitors for Java
 
-Version: 1.0
-
 This software is based loosely on the javasimon project, which is itself based loosely on the JaMON project.
 Javasimon has many more features than BasicMon and is almost as fast, or in some cases faster (mostly with BasicMon
 statistics enabled). I highly recommend using javasimon, unless:
