@@ -33,12 +33,18 @@ public class BasicMonUtil {
     }
 
     /**
-     * Code based on javasimon SimonUtil.
+     * Code based on javasimon SimonUtil, but handles Nan and Infinity.
      * @param decimal The decimal value to format.
      * @return The formatted decimal.
      */
     public static String formatDecimal(double decimal) {
 
+        if (Double.isNaN(decimal)) {
+            return "NA";
+        }
+        if (Double.isInfinite(decimal)) {
+            return "Inf";
+        }
         if (decimal < TEN) {
             return UNDER_TEN_FORMAT.format(decimal);
         }
@@ -64,6 +70,29 @@ public class BasicMonUtil {
             return UNDER_HUNDRED_FORMAT.format(time) + unit;
         }
         return DEFAULT_FORMAT.format(time) + unit;
+
+    }
+
+    /**
+     * Checks double for infinity or NaN and handles it accordingly, otherwise delegates to {@link #presentNanoTime(long)}.
+     * @param nanos
+     * @return
+     */
+    public static String presentNanoTime(double nanos) {
+
+        if(Double.isInfinite(nanos)) {
+
+            return "Inf";
+
+        } else if(Double.isNaN(nanos)) {
+
+                return "NA";
+
+        } else {
+
+            return presentNanoTime((long)nanos);
+
+        }
 
     }
 

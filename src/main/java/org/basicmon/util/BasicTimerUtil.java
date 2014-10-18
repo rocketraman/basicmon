@@ -12,14 +12,14 @@ public class BasicTimerUtil {
         StringBuilder s = new StringBuilder(256)
             .append("BasicTimer: [").append(timer.getId()).append("]")
             .append(" total ").append(BasicMonUtil.presentNanoTime(timer.getTotal()))
-            .append(", timer ").append(timer.getUpdateCount())
-            .append(", mean ").append(BasicMonUtil.presentNanoTime((long)timer.getMean()));
+            .append(", count ").append(timer.getUpdateCount())
+            .append(", mean ").append(BasicMonUtil.presentNanoTime(timer.getMean()));
 
         if(timer.isWithStats()) {
 
             s.append(", min ").append(BasicMonUtil.presentNanoTime(timer.getMin()))
                 .append(", max ").append(BasicMonUtil.presentNanoTime(timer.getMax()))
-                .append(", stddev ").append(BasicMonUtil.presentNanoTime((long)timer.getStdDev()));
+                .append(", stddev ").append(BasicMonUtil.presentNanoTime(timer.getStdDev()));
 
         }
 
