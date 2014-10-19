@@ -75,8 +75,8 @@ public class BasicMonUtil {
 
     /**
      * Checks double for infinity or NaN and handles it accordingly, otherwise delegates to {@link #presentNanoTime(long)}.
-     * @param nanos
-     * @return
+     * @param nanos time in nanoseconds
+     * @return human readable time string
      */
     public static String presentNanoTime(double nanos) {
 
