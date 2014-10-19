@@ -3,6 +3,7 @@ package org.basicmon.benchmark;
 import com.google.caliper.Param;
 import com.google.caliper.api.AfterRep;
 import com.google.caliper.api.Macrobenchmark;
+import com.google.caliper.api.SkipThisScenarioException;
 import org.basicmon.BasicMonManager;
 import org.basicmon.BasicTimer;
 import org.javasimon.SimonManager;
@@ -20,6 +21,7 @@ import java.util.concurrent.CountDownLatch;
 @SuppressWarnings("UnusedDeclaration")
 public final class SimonMultiThreadedComparison {
 
+    @Param({"sync", "atomic"}) String timerMethod;
     @Param({"8", "100"}) int threads;
     @Param({"100", "1000"}) int loops;
 
@@ -34,24 +36,21 @@ public final class SimonMultiThreadedComparison {
     }
 
     @Macrobenchmark
-    public void basicAtomic() {
+    public void basic() {
+        String timerMethod = this.timerMethod;
         int threads = this.threads;
         int loops = this.loops;
-        doBasicAtomic(threads, loops);
-    }
-
-    @Macrobenchmark
-    public void basicSynchronized() {
-        int threads = this.threads;
-        int loops = this.loops;
-        doBasicSync(threads, loops);
+        if(timerMethod.equals("atomic")) doBasicAtomic(threads, loops);
+        else if(timerMethod.equals("sync")) doBasicSync(threads, loops);
     }
 
     @Macrobenchmark
     public void simon() {
+        String timerMethod = this.timerMethod;
         int threads = this.threads;
         int loops = this.loops;
-        doSimon(threads, loops);
+        if(timerMethod.equals("atomic")) throw new SkipThisScenarioException();
+        else if(timerMethod.equals("sync")) doSimon(threads, loops);
     }
 
     private void doSimon(int threads, int loops) {
