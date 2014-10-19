@@ -56,6 +56,23 @@
               </execution>
             </executions>
           </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.4</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <keyname>7A3E2F22</keyname>
+            </configuration>
+          </plugin>
         </plugins>
       </build>
     </profile>
@@ -104,4 +121,13 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <distributionManagement>
+    <repository>
+      <id>bintray-rocketraman-maven-BasicMon</id>
+      <name>rocketraman-maven-BasicMon</name>
+      <url>https://api.bintray.com/maven/rocketraman/maven/BasicMon</url>
+    </repository>
+  </distributionManagement>
+
 </project>
