@@ -1,13 +1,18 @@
 # BasicMon - Really Simple Monitors for Java
 
-This software is based loosely on the javasimon project, which is itself based loosely on the JaMON project.
-Javasimon has many more features than BasicMon and is almost as fast, or in some cases faster (mostly with BasicMon
-statistics enabled). I highly recommend using javasimon, unless:
+This software is based loosely on the [Java Simon](https://github.com/virgo47/javasimon) project, which is itself
+based loosely on the JaMON project. Java Simon has many more features than BasicMon and is almost as fast, or in
+some cases faster (mostly with BasicMon statistics enabled). I highly recommend using Java Simon, unless:
 
   * your project has very basic timing requirements, or
   * the smallest timing overhead is required, or
   * you need to be able to select different timing implementations (i.e.use of atomic classes vs synchronized keyword)
     depending on your specific platform and concurrency requirements.
+
+This project grew from a test case I put together for
+[Javasimon Issue #21](https://code.google.com/p/javasimon/issues/detail?id=21) which reported that Java Simon
+confusingly included the time it took to obtain a lock to the timer reference, in the timing of the timed block
+itself.
 
 In any of these cases, BasicMon should suit you well.
 
