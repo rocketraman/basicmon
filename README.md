@@ -95,6 +95,8 @@ Project uses the following libraries:
 
 ## License
 
-This software is distributed under the terms of the LGPL License:
-  * check "lgpl.txt" in the root directory of the project
+This software is distributed under the terms of the Apache License v2:
+  * check "LICENSE.txt" in the root directory of the project
   * portions of this code are from the Java Simon project, and are included with permission
+
+(c) Copyright 2014 Raman Gupta

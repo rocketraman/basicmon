@@ -7,7 +7,32 @@
   <version>1.1</version>
   <packaging>jar</packaging>
 
-  <name>basicmon</name>
+  <name>BasicMon</name>
+  <description>Basic fast timing capabilities for Java.</description>
+  <url>https://github.com/rocketraman/basicmon</url>
+  <inceptionYear>2010</inceptionYear>
+
+  <scm>
+    <url>https://github.com/rocketraman/basicmon</url>
+    <connection>scm:https://rocketraman@github.com/rocketraman/basicmon.git</connection>
+    <developerConnection>scm:git://github.com/rocketraman/basicmon.git</developerConnection>
+  </scm>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>rocketraman</id>
+      <name>Raman Gupta</name>
+      <email>rocketraman@gmail.com</email>
+    </developer>
+  </developers>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
