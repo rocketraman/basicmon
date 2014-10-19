@@ -1,7 +1,11 @@
-### Version 1.1
+### 1.2-SNAPSHOT
+
+* Returns sync counters by default rather than atomic
+
+### 1.1
 
 * Use sync timers rather than atomic by default
 
-### Version 1.0
+### 1.0
 
  * Initial release.

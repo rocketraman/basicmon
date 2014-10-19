@@ -10,10 +10,11 @@ import org.javasimon.utils.SimonUtils;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * Under high contention for the timer itself, we still want the critical section to be timed without waiting
- * for locks. See for example this issue I found in JavaSimon: https://code.google.com/p/javasimon/issues/detail?id=21.
- * This test introduces multiple threads that are contending for the same timer, but has an empty timed section.
- * The total time reported by the timer should be as low as possible.
+ * Under high contention for the timer itself, we still want the underlying code to be timed without including
+ * any time waiting for timer locks, but rather timing the underlying code itself. See for example this issue I
+ * found in JavaSimon: https://code.google.com/p/javasimon/issues/detail?id=21, as well as
+ * https://github.com/virgo47/javasimon/issues/1. This test introduces multiple threads that are contending for
+ * the same timer, but has an empty timed section. The total time reported by the timer should be as low as possible.
  */
 @SuppressWarnings("UnusedDeclaration")
 public final class CriticalSectionTimerComparison {
@@ -48,6 +49,9 @@ public final class CriticalSectionTimerComparison {
              System.out.println("\nRound: " + round++);
 
              test.doBasicSync(THREADS, LOOP);
+             BasicMonManager.reset();
+
+             test.doBasicSyncWithStats(THREADS, LOOP);
              BasicMonManager.reset();
 
              test.doBasicAtomic(THREADS, LOOP);
@@ -110,6 +114,22 @@ public final class CriticalSectionTimerComparison {
         System.out.println("Test BasicTimer Sync Total: " + SimonUtils.presentNanoTime(ns));
     }
 
+    private void doBasicSyncWithStats(int threads, int loops) {
+        long ns = System.nanoTime();
+        latch = new CountDownLatch(threads);
+        for (int i = 0; i < threads; i++) {
+            new BasicSyncTimerWithStatsMultithreadedStress(loops).start();
+        }
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        ns = System.nanoTime() - ns;
+        System.out.println("Result: " + BasicMonManager.getTimer(NAME));
+        System.out.println("Test BasicTimer Sync With Stats Total: " + SimonUtils.presentNanoTime(ns));
+    }
+
     private static class SimonMultithreadedStress extends Thread {
         int loops;
         long result;
@@ -152,6 +172,22 @@ public final class CriticalSectionTimerComparison {
 
         public void run() {
             BasicTimer timer = BasicMonManager.getSyncTimer(NAME);
+            for (int i = 0; i < loops; i++) {
+                result |= timer.start().stop();
+            }
+            latch.countDown();
+        }
+    }
+
+    private static class BasicSyncTimerWithStatsMultithreadedStress extends Thread {
+        int loops;
+        long result;
+        public BasicSyncTimerWithStatsMultithreadedStress(int loops) {
+            this.loops = loops;
+        }
+
+        public void run() {
+            BasicTimer timer = BasicMonManager.getSyncTimerWithStats(NAME);
             for (int i = 0; i < loops; i++) {
                 result |= timer.start().stop();
             }

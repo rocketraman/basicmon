@@ -75,19 +75,19 @@ public final class BasicMonManager {
 
     public static BasicCounter getCounter(String id) {
 
-        return manager.doGetAtomicCounter(id, false);
+        return manager.doGetSyncCounter(id, false);
 
     }
 
     public static BasicCounter getCounterWithStats(String id) {
 
-        return manager.doGetAtomicCounter(id, true);
+        return manager.doGetSyncCounter(id, true);
 
     }
 
     public static BasicCounter getCounter(String id, boolean withStats) {
 
-        return manager.doGetAtomicCounter(id, withStats);
+        return manager.doGetSyncCounter(id, withStats);
 
     }
 
