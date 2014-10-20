@@ -1,4 +1,4 @@
-### 1.2-SNAPSHOT
+### 1.2
 
 * Returns sync counters by default rather than atomic
 
