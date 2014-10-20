@@ -14,8 +14,8 @@
 
   <scm>
     <url>https://github.com/rocketraman/basicmon</url>
-    <connection>scm:https://rocketraman@github.com/rocketraman/basicmon.git</connection>
-    <developerConnection>scm:git://github.com/rocketraman/basicmon.git</developerConnection>
+    <connection>scm:git:https://rocketraman@github.com/rocketraman/basicmon.git</connection>
+    <developerConnection>scm:git:git@github.com:rocketraman/basicmon.git</developerConnection>
   </scm>
 
   <licenses>
